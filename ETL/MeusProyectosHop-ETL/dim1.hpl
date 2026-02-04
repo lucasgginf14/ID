@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pipeline>
+  <info>
+    <name>dim1</name>
+    <name_sync_with_filename>Y</name_sync_with_filename>
+    <description/>
+    <extended_description/>
+    <pipeline_version/>
+    <pipeline_type>Normal</pipeline_type>
+    <pipeline_status>0</pipeline_status>
+    <parameters>
+      <parameter>
+        <name>UPDATE_DATE</name>
+        <default_value>'2025-01-02'</default_value>
+        <description/>
+      </parameter>
+    </parameters>
+    <capture_transform_performance>N</capture_transform_performance>
+    <transform_performance_capturing_delay>1000</transform_performance_capturing_delay>
+    <transform_performance_capturing_size_limit>100</transform_performance_capturing_size_limit>
+    <created_user>-</created_user>
+    <created_date>2019/11/21 20:00:54.388</created_date>
+    <modified_user>-</modified_user>
+    <modified_date>2019/11/21 20:00:54.388</modified_date>
+  </info>
+  <notepads>
+  </notepads>
+  <order>
+    <hop>
+      <from>Table input - Carga nuevos y modificados</from>
+      <to>Separar altas y modificadas</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Separar altas y modificadas</from>
+      <to>Combination lookup/update Altas</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Separar altas y modificadas</from>
+      <to>Update modificadas</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Combination lookup/update Altas</from>
+      <to>Update altas</to>
+      <enabled>Y</enabled>
+    </hop>
+  </order>
+  <transform>
+    <name>Combination lookup/update Altas</name>
+    <type>CombinationLookup</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <cache_size>9999</cache_size>
+    <commit>1</commit>
+    <connection>etl_datamart</connection>
+    <crc>N</crc>
+    <crcfield>hashcode</crcfield>
+    <fields>
+      <key>
+        <lookup>code_voyage</lookup>
+        <name>id</name>
+      </key>
+      <return>
+        <creation_method>sequence</creation_method>
+        <name>id_voyage</name>
+        <use_autoinc>N</use_autoinc>
+      </return>
+      <sequence>seq_voyage</sequence>
+    </fields>
+    <preloadCache>N</preloadCache>
+    <replace>N</replace>
+    <schema>"public"</schema>
+    <table>dim_voyage</table>
+    <attributes/>
+    <GUI>
+      <xloc>880</xloc>
+      <yloc>224</yloc>
+    </GUI>
+  </transform>
+  <transform>
+    <name>Separar altas y modificadas</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <compare>
+      <condition>
+        <conditions>
+          <condition>
+            <conditions>
+</conditions>
+            <function>IS NULL</function>
+            <leftvalue>mod_date</leftvalue>
+            <negated>N</negated>
+            <operator>-</operator>
+          </condition>
+          <condition>
+            <conditions>
+</conditions>
+            <function>=</function>
+            <leftvalue>create_date</leftvalue>
+            <negated>N</negated>
+            <operator>OR</operator>
+            <rightvalue>mod_date</rightvalue>
+          </condition>
+        </conditions>
+        <function>IS NULL</function>
+        <leftvalue>mod_date</leftvalue>
+        <negated>N</negated>
+        <operator>-</operator>
+      </condition>
+    </compare>
+    <send_false_to>Update modificadas</send_false_to>
+    <send_true_to>Combination lookup/update Altas</send_true_to>
+    <attributes/>
+    <GUI>
+      <xloc>608</xloc>
+      <yloc>224</yloc>
+    </GUI>
+  </transform>
+  <transform>
+    <name>Table input - Carga nuevos y modificados</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>etl_operacional</connection>
+    <execute_each_row>N</execute_each_row>
+    <limit>0</limit>
+    <sql>SELECT 
+    id,
+    zone,
+    init_date,
+    end_date,
+    price,
+    create_date,
+    mod_date,
+    (end_date - init_date) as duration
+FROM public.voyage 
+WHERE create_date = ${UPDATE_DATE}
+   OR mod_date = ${UPDATE_DATE} </sql>
+    <variables_active>Y</variables_active>
+    <attributes/>
+    <GUI>
+      <xloc>288</xloc>
+      <yloc>224</yloc>
+    </GUI>
+  </transform>
+  <transform>
+    <name>Update altas</name>
+    <type>Update</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <commit>100</commit>
+    <connection>etl_datamart</connection>
+    <error_ignored>N</error_ignored>
+    <lookup>
+      <key>
+        <condition>=</condition>
+        <field>id_voyage</field>
+        <name>id_voyage</name>
+      </key>
+      <schema>"public"</schema>
+      <table>dim_voyage</table>
+      <value>
+        <name>zone</name>
+        <rename>zone</rename>
+      </value>
+      <value>
+        <name>init_date</name>
+        <rename>init_date</rename>
+      </value>
+      <value>
+        <name>end_date</name>
+        <rename>end_date</rename>
+      </value>
+      <value>
+        <name>duration</name>
+        <rename>duration</rename>
+      </value>
+      <value>
+        <name>price</name>
+        <rename>price</rename>
+      </value>
+    </lookup>
+    <skip_lookup>N</skip_lookup>
+    <use_batch>N</use_batch>
+    <attributes/>
+    <GUI>
+      <xloc>1184</xloc>
+      <yloc>224</yloc>
+    </GUI>
+  </transform>
+  <transform>
+    <name>Update modificadas</name>
+    <type>Update</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <commit>100</commit>
+    <connection>etl_datamart</connection>
+    <error_ignored>N</error_ignored>
+    <lookup>
+      <key>
+        <condition>=</condition>
+        <field>code_voyage</field>
+        <name>id</name>
+      </key>
+      <schema>"public"</schema>
+      <table>dim_voyage</table>
+      <value>
+        <name>zone</name>
+        <rename>zone</rename>
+      </value>
+      <value>
+        <name>init_date</name>
+        <rename>init_date</rename>
+      </value>
+      <value>
+        <name>end_date</name>
+        <rename>end_date</rename>
+      </value>
+      <value>
+        <name>duration</name>
+        <rename>duration</rename>
+      </value>
+      <value>
+        <name>price</name>
+        <rename>price</rename>
+      </value>
+    </lookup>
+    <skip_lookup>N</skip_lookup>
+    <use_batch>N</use_batch>
+    <attributes/>
+    <GUI>
+      <xloc>608</xloc>
+      <yloc>416</yloc>
+    </GUI>
+  </transform>
+  <transform_error_handling>
+  </transform_error_handling>
+  <attributes/>
+</pipeline>

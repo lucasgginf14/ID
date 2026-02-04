@@ -1,0 +1,26 @@
+{
+  "rdbms": {
+    "POSTGRESQL": {
+      "databaseName": "${DB_NAME_DM}",
+      "pluginId": "POSTGRESQL",
+      "accessType": 0,
+      "hostname": "${DB_HOST_DM}",
+      "password": "${DB_PASSWORD_DM}",
+      "pluginName": "PostgreSQL",
+      "port": "${DB_PORT_DM}",
+      "attributes": {
+        "SUPPORTS_TIMESTAMP_DATA_TYPE": "Y",
+        "QUOTE_ALL_FIELDS": "N",
+        "SUPPORTS_BOOLEAN_DATA_TYPE": "Y",
+        "FORCE_IDENTIFIERS_TO_LOWERCASE": "N",
+        "PRESERVE_RESERVED_WORD_CASE": "Y",
+        "SQL_CONNECT": "",
+        "FORCE_IDENTIFIERS_TO_UPPERCASE": "N",
+        "PREFERRED_SCHEMA_NAME": ""
+      },
+      "manualUrl": "",
+      "username": "${DB_USER_DM}"
+    }
+  },
+  "name": "etl_datamart"
+}

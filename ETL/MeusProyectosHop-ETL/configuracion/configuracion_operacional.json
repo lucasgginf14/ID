@@ -1,0 +1,23 @@
+{
+  "variables" : [ {
+    "name" : "DB_HOST_OP",
+    "value" : "localhost",
+    "description" : "Direccion IP del SGBD"
+  }, {
+    "name" : "DB_PORT_OP",
+    "value" : "5432",
+    "description" : "Puerto del SGBD"
+  }, {
+    "name" : "DB_NAME_OP",
+    "value" : "ETLop",
+    "description" : "Nombre de la BD"
+  }, {
+    "name" : "DB_USER_OP",
+    "value" : "myuser",
+    "description" : "Usuario de la BD"
+  }, {
+    "name" : "DB_PASSWORD_OP",
+    "value" : "Encrypted 2be98afc86aa7f289b20cbd75ccc3fd89",
+    "description" : "Contraseña del usuario de la BD"
+  } ]
+}

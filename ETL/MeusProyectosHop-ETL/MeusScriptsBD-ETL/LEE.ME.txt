@@ -1,0 +1,11 @@
+Estes son os ficheiros cos scripts que utilicei no meu exemplo de clase.
+
+Deixoos aquí dispoñíbeis por se queredes tomalos como referencia para facer algo parecido na vosa práctica. 
+A mín resultoume moito cómoda esta organización para facer as probas da miña implementación.
+
+
+00_crear_BDs.sql:     Crea as bases de datos ETLop e ETLbd. Require que xa esté creado o usuario 'myuser', que será o propietario das BDs
+01_crea_op.sql:       Crea as táboas necesarias (baleiras) na BD operacional (se xa existían, elimina as anteriores) 
+02_crea_dm.sql:       Crea as táboas necesarias (baleiras) na BD do Datamart (se xa existían, elimina as anteriores) 
+03_inicializa_op.sql: Simula cambios producidos na BD durante o mes de xaneiro (altas) 
+04_cambios_op.sql:    Simula cambios producidos na BD durante o mes de febreiro (altas +  modificacions)

@@ -1,0 +1,14 @@
+gei\id\tutelado\dao\PersoaDaoJPA.class
+gei\id\tutelado\dao\CruceiroDaoJPA.class
+gei\id\tutelado\model\Tripulante.class
+gei\id\tutelado\App.class
+gei\id\tutelado\model\Persoa.class
+gei\id\tutelado\model\Viaxe.class
+gei\id\tutelado\dao\ViaxeDaoJPA.class
+gei\id\tutelado\model\Pasaxero.class
+gei\id\tutelado\dao\PersoaDao.class
+gei\id\tutelado\model\Cruceiro.class
+gei\id\tutelado\dao\CruceiroDao.class
+gei\id\tutelado\configuracion\Configuracion.class
+gei\id\tutelado\dao\ViaxeDao.class
+gei\id\tutelado\configuracion\ConfiguracionJPA.class

@@ -1,0 +1,1 @@
+psql -U myuser -d ETLop -f 04_cambios_op.sql

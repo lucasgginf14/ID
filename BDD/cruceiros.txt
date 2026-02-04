@@ -1,0 +1,116 @@
+DROP SCHEMA IF EXISTS cruceiros CASCADE;
+CREATE SCHEMA IF NOT EXISTS cruceiros;
+
+CREATE TABLE IF NOT EXISTS cruceiros.barcos (
+    id_barco INT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    modelo VARCHAR(50),
+    ano_fabricacion INT,
+    capacidade_pasaxeros INT
+);
+
+-- Distribuir por 'id_barco'
+SELECT create_distributed_table('cruceiros.barcos', 'id_barco');
+
+CREATE TABLE IF NOT EXISTS cruceiros.portos (
+    id_porto INT PRIMARY KEY,
+    sku_code VARCHAR(50) NOT NULL UNIQUE,
+    nome VARCHAR(100) NOT NULL,
+    pais VARCHAR(50) NOT NULL,
+    tasa_portuaria NUMERIC(5,2)
+);
+
+-- Convertir a Tabla de Referencia
+SELECT create_reference_table('cruceiros.portos');
+
+CREATE TABLE IF NOT EXISTS cruceiros.viaxes (
+    id_viaxe BIGSERIAL NOT NULL,
+    id_barco INT NOT NULL,
+    id_porto INT NOT NULL,
+    fecha_saida DATE,
+    fecha_chegada DATE,
+    
+    CONSTRAINT viaxes_pkey PRIMARY KEY (id_barco, id_viaxe),
+    CONSTRAINT viaxes_barco_fk FOREIGN KEY (id_barco) REFERENCES cruceiros.barcos(id_barco),
+    CONSTRAINT viaxes_porto_fk FOREIGN KEY (id_porto) REFERENCES cruceiros.portos(id_porto)
+);
+
+-- Distribuir por 'id_barco'
+SELECT create_distributed_table (
+	'cruceiros.viaxes',
+	'id_barco',
+	colocate_with => 'cruceiros.barcos'
+);
+
+CREATE TABLE IF NOT EXISTS cruceiros.reservas (
+    id_reserva BIGSERIAL NOT NULL,
+    id_viaxe BIGINT NOT NULL,
+    id_barco INT NOT NULL,
+    fecha_reserva DATE DEFAULT CURRENT_DATE,
+    nome_cliente VARCHAR(100),
+    total_pagado NUMERIC(10, 2),
+    CONSTRAINT reservas_pkey PRIMARY KEY (id_reserva, id_barco),
+    CONSTRAINT reservas_viaxe_fk FOREIGN KEY (id_barco, id_viaxe)
+        REFERENCES cruceiros.viaxes(id_barco, id_viaxe)
+);
+
+-- Distribuir por 'id_barco'
+SELECT create_distributed_table(
+    'cruceiros.reservas',
+    'id_barco',
+    colocate_with => 'cruceiros.viaxes'
+);
+
+SET search_path TO cruceiros;
+
+
+-- Ejemplos: 5 inserts en cada tabla
+
+-- Barcos (5)
+INSERT INTO cruceiros.barcos (id_barco, nome, modelo, ano_fabricacion, capacidade_pasaxeros) VALUES
+(1, 'Aurora Mar', 'A200', 2010, 1200),
+(2, 'Sol de Abril', 'S-Explorer', 2015, 1800),
+(3, 'Brisa Azul', 'BreezeX', 2018, 1500),
+(4, 'Vento Norte', 'VN-300', 2008, 900),
+(5, 'Estrella Oceánica', 'EO-Classic', 2020, 2200);
+
+-- Portos (5)
+INSERT INTO cruceiros.portos (id_porto, sku_code, nome, pais, tasa_portuaria) VALUES
+(1, 'PT-LIS-001', 'Lisboa', 'Portugal', 150.00),
+(2, 'ES-BCN-001', 'Barcelona', 'España', 175.50),
+(3, 'IT-VEN-001', 'Venecia', 'Italia', 200.00),
+(4, 'US-MIA-001', 'Miami', 'Estados Unidos', 250.75),
+(5, 'BR-RIO-001', 'Río de Janeiro', 'Brasil', 180.25);
+
+-- Viaxes (5)
+INSERT INTO cruceiros.viaxes (id_viaxe, id_barco, id_porto, fecha_saida, fecha_chegada) VALUES
+(1001, 1, 2, '2026-03-01', '2026-03-07'),
+(1002, 2, 3, '2026-04-15', '2026-04-22'),
+(1003, 3, 1, '2026-05-10', '2026-05-17'),
+(1004, 4, 5, '2026-06-05', '2026-06-12'),
+(1005, 5, 4, '2026-07-20', '2026-07-27');
+
+-- Reservas (5)
+INSERT INTO cruceiros.reservas (id_reserva, id_viaxe, id_barco, fecha_reserva, nome_cliente, total_pagado) VALUES
+(2001, 1001, 1, '2025-11-01', 'María López', 999.99),
+(2002, 1002, 2, '2025-11-05', 'Carlos Pérez', 1299.50),
+(2003, 1003, 3, '2025-11-10', 'Ana Gómez', 849.75),
+(2004, 1004, 4, '2025-11-12', 'Jorge Silva', 699.00),
+(2005, 1001, 1, '2025-11-20', 'Lucía Fernández', 1450.00);
+
+
+SELECT
+  b.id_barco,
+  b.nome AS barco,
+  COUNT(DISTINCT v.id_viaxe) AS total_viaxes,
+  COUNT(r.id_reserva) AS total_reservas,
+  COALESCE(SUM(r.total_pagado), 0) AS ingresos_totais,
+  AVG(v.fecha_chegada - v.fecha_saida) AS duracion_media_dias
+FROM cruceiros.barcos b
+JOIN cruceiros.viaxes v
+  ON v.id_barco = b.id_barco
+LEFT JOIN cruceiros.reservas r
+  ON r.id_barco = v.id_barco
+ AND r.id_viaxe = v.id_viaxe
+GROUP BY b.id_barco, b.nome
+ORDER BY ingresos_totais DESC;
